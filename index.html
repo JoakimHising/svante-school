@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0d1d">
+<title>Svante School</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Figtree:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="engine/style.css">
+<style>
+  .brand { font: 700 clamp(34px, 10vw, 44px)/1 var(--f-display); margin: 18px 0 0; letter-spacing: -0.01em; }
+  .brand span { color: var(--c1); }
+  .lead { margin: 0; color: var(--muted); }
+  .mods { display: flex; flex-direction: column; gap: 10px; }
+  .mod { display: grid; grid-template-columns: 52px 1fr auto; gap: 14px; align-items: center; padding: 14px; text-decoration: none; color: inherit; box-shadow: 0 4px 0 var(--shadow); }
+  .mod:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--shadow); }
+  .mod .glyph { width: 52px; height: 52px; font-size: 19px; }
+  .mod h3 { margin: 0; font: 700 18px/1.15 var(--f-display); }
+  .mod p { margin: 3px 0 8px; font-size: 13.5px; color: var(--muted); line-height: 1.35; }
+  .mod .row { display: flex; gap: 10px; align-items: center; font-size: 13px; color: var(--muted); flex-wrap: wrap; }
+  .mod .row .meter { flex: 1; min-width: 80px; height: 6px; }
+  .mod .row .meter > div { background: var(--tc); }
+  .mod .when { color: var(--gold); font-weight: 600; }
+  .mod > svg { width: 22px; height: 22px; color: var(--muted); }
+  .empty { padding: 20px; text-align: center; color: var(--muted); }
+</style>
+</head>
+<body>
+<main class="screen" id="app"></main>
+<script src="modules/manifest.js"></script>
+<script>
+(function () {
+  const app = document.getElementById('app');
+  const today = new Date(new Date().toDateString());
+  const readiness = id => { try { return JSON.parse(localStorage.getItem('svante:mod:' + id))?.summary?.readiness ?? null; } catch { return null; } };
+  const days = d => Math.round((new Date(d + 'T00:00:00') - today) / 864e5);
+  const when = d => { if (!d) return ''; const n = days(d); return n < 0 ? 'Har varit' : n === 0 ? 'Idag!' : n === 1 ? 'Imorgon' : `Om ${n} dagar`; };
+  const chev = '<svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>';
+  const card = m => {
+    const r = readiness(m.id);
+    return `<a class="card mod" href="${m.path}" style="--tc:${m.color}">
+      <span class="glyph">${m.glyph}</span>
+      <span><h3>${m.title}</h3><p>${m.subject} · ${m.grade} · ${m.about}</p>
+        <span class="row">${m.testDate ? `<span class="when">${when(m.testDate)}</span>` : ''}<span class="meter"><div style="width:${r || 0}%"></div></span><span>${r === null ? 'Inte startad' : r + '% redo'}</span></span></span>
+      ${chev}</a>`;
+  };
+  const all = [...(globalThis.SvanteManifest || [])].sort((a, b) => (b.added || '').localeCompare(a.added || ''));
+  const upcoming = all.filter(m => !m.testDate || days(m.testDate) >= 0), past = all.filter(m => m.testDate && days(m.testDate) < 0);
+  app.innerHTML = `<h1 class="brand">Svante <span>School</span></h1>
+    <p class="lead">Välj ett prov eller en läxa och besegra bossarna.</p>
+    <h2 class="section-label">Kommande</h2>
+    <div class="mods">${upcoming.map(card).join('') || '<p class="card empty">Inga kommande prov just nu.</p>'}</div>
+    ${past.length ? `<h2 class="section-label">Tidigare</h2><div class="mods">${past.map(card).join('')}</div>` : ''}`;
+})();
+</script>
+</body>
+</html>
