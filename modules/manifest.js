@@ -1,9 +1,21 @@
 // Alla moduler som visas på startsidan. Nyast överst sorteras automatiskt på `added`.
 globalThis.SvanteManifest = [
   {
+    id: 'ljudlabbet',
+    path: 'modules/ljud-och-ljus/labb/',
+    title: 'Ljudlabbet',
+    subject: 'Fysik',
+    grade: 'Åk 8',
+    about: 'Hör och testa själv: toner, gitarrsträng, festivalljud, eko, laser och scenljus',
+    testDate: '2026-11-12',
+    added: '2026-11-10',
+    glyph: '♪',
+    color: '#ffcb52',
+  },
+  {
     id: 'ljud-och-ljus',
     path: 'modules/ljud-och-ljus/',
-    title: 'Ljud och ljus',
+    title: 'Ljud och ljus – quiz',
     subject: 'Fysik',
     grade: 'Åk 8',
     about: 'Vågor, frekvens, eko, speglar, brytning, linser, färger och strålning',

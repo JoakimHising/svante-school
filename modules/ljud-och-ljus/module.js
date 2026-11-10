@@ -1,7 +1,7 @@
 // Modul: Ljud och ljus (Fysik åk 8). Källa: provinfo v. 46, bildspelen Ljud och Optik,
 // arbetsbladen Akustik 4.1–4.7 och Optik 5.1–5.9 med facit. Frågorna knyter an till musik där det går.
 (function () {
-  const { Q, pick, shuffle, fromList } = SC;
+  const { pick, shuffle, fromList } = SC;
 
   // ───────────── Hjälpare ─────────────
   const mc = (level, ask, right, wrongs, hint, steps, extra = {}) => ({
@@ -99,7 +99,7 @@
       [['Att det finns ljus', 'Ljus och ljud är olika saker. Ljud uppstår när något vibrerar, som ett trumskinn eller en sträng.'],
        ['Att luften är varm', 'Temperaturen spelar ingen roll för om ljud uppstår. Det som krävs är att något vibrerar.']],
       'Tänk på vad trumskinnet gör när du slår på det.', ['Ljud uppstår när något vibrerar, till exempel ett skinn eller en sträng.']),
-    mc(1, 'Svante slår på virveltrumman. Vad gör skinnet med luften?', 'Trycker ihop och tunnar ut luften',
+    mc(1, 'Någon slår på en virveltrumma. Vad gör skinnet med luften?', 'Trycker ihop och tunnar ut luften',
       [['Skjuter iväg luften hela vägen till örat', 'Luften stannar ungefär där den är. Det är rörelseenergin som förflyttas, från molekyl till molekyl.'],
        ['Värmer upp luften så att den låter', 'Ljud är inte värme. Skinnet trycker ihop luften till förtätningar och drar isär den till förtunningar.']],
       'Molekylerna knuffar på varandra.', ['Skinnet vibrerar och gör förtätningar och förtunningar i luften.', 'Rörelseenergin förflyttas genom luften.']),
@@ -120,13 +120,13 @@
       [['Strängarna själva', 'Strängarna gör ljudet, men de är för tunna för att trycka på mycket luft. Kroppen förstärker.'],
        ['Stämskruvarna', 'Stämskruvarna ändrar spänningen och därmed tonen. Det är kroppen som förstärker.']],
       'Varför låter en elgitarr utan förstärkare så tyst?', ['Gitarrkroppen är en resonanslåda som svänger med och förstärker ljudet.']),
-    mc(2, 'Svante spänner trumskinnet hårdare. Vad händer med tonen?', 'Den blir högre',
+    mc(2, 'Trummisen spänner skinnet hårdare med stämnyckeln. Vad händer med tonen?', 'Den blir högre',
       [['Den blir lägre', 'Ett hårdare spänt skinn vibrerar snabbare. Högre frekvens ger högre ton.'], ['Ljudet blir starkare', 'Spänningen ändrar tonhöjden. Hur starkt det blir beror på hur hårt du slår.']],
       'Snabbare vibration ger…?', ['Hårdare spänt skinn vibrerar snabbare.', 'Högre frekvens ger högre ton.']),
-    mc(2, 'Basisten byter till en tjockare sträng som är lika lång och lika spänd. Vad händer med tonen?', 'Den blir lägre',
+    mc(2, 'Basens strängar är mycket tjockare än gitarrens. Om längd och spänning är lika, vad gör tjockleken med tonen?', 'Den blir lägre',
       [['Den blir högre', 'En tjockare sträng är tyngre och svänger långsammare. Det ger lägre frekvens.'], ['Inget händer', 'Tjockleken spelar roll. Tjockare sträng ger lägre ton.']],
       'Vilka strängar på gitarren är tjockast, de höga eller de låga?', ['Tjockare sträng svänger långsammare.', 'Lägre frekvens ger lägre ton.']),
-    mc(2, 'Svante slår hårdare på samma trumma. Vad ändras?', 'Amplituden, ljudet blir starkare',
+    mc(2, 'Trummisen slår hårdare på samma trumma. Vad ändras?', 'Amplituden, ljudet blir starkare',
       [['Frekvensen, tonen blir högre', 'Tonen är densamma, det kan du se i stämappen. Hårdare slag ger större amplitud, alltså starkare ljud.'],
        ['Ljudets hastighet blir högre', 'Ljudet går lika fort, 340 m/s i luft. Det är amplituden som ökar.']],
       'Titta på stämappen: siffran är densamma.', ['Hårdare slag ger högre vågor, större amplitud.', 'Större amplitud = starkare ljud (fler dB).']),
@@ -156,10 +156,9 @@
     mc(3, 'Kort våglängd ger…', 'hög ton',
       [['låg ton', 'Det är tvärtom. Lång våglängd ger låg ton.'], ['starkt ljud', 'Styrkan beror på amplituden, inte våglängden.']],
       'Täta vågor.', ['Kort våglängd = hög frekvens = hög ton.']),
-    { level: 3, prompt: '', ask: 'A-strängen ger 110 Hz. Svante trycker ner den vid tolfte bandet, så att den svängande delen blir hälften så lång. Vilken frekvens får tonen?',
-      answer: 220, unit: 'Hz',
-      traps: [[55, 'En kortare sträng svänger snabbare, inte långsammare. Halva längden ger dubbla frekvensen.']],
-      hint: 'Halva strängen svänger dubbelt så snabbt.', steps: ['Halva längden ger dubbla frekvensen.', '110 · 2 = <b>220 Hz</b>. Det är en oktav upp.'] },
+    mc(3, 'Gitarristen trycker ner strängen vid tolfte bandet, så att den svängande delen blir hälften så lång. Vad händer med frekvensen?', 'Den dubblas, tonen går en oktav upp',
+      [['Den halveras, tonen går ner', 'En kortare sträng svänger snabbare, inte långsammare.'], ['Den är densamma', 'Kortare svängande del ger snabbare svängningar och högre frekvens.']],
+      'Kortare sträng svänger…', ['Halva längden ger dubbla frekvensen.', 'Samma ton, en oktav upp.']),
   ];
 
   const waveTon = { key: 'vag-ton', levels: [1, 2], make() {
@@ -247,38 +246,24 @@
     mc(3, 'Vad blir ljud till när det absorberas av mjuka material?', 'Värme',
       [['Ljus', 'Ljudet blir inte till ljus. Rörelseenergin blir värme.'], ['Elektricitet', 'Det är mikrofonen som gör om ljud till el. Mjuka material gör om ljudet till värme.']],
       'Energi försvinner inte, den byter form.', ['När ljud absorberas omvandlas rörelseenergin till värme.']),
+    mc(2, 'Varför ser man blixten innan man hör åskan?', 'Ljuset går mycket snabbare än ljudet',
+      [['Åskan kommer senare från molnet', 'Blixt och åska uppstår samtidigt. Ljuset (300 000 km/s) är framme direkt, ljudet (340 m/s) tar tid.'], ['Örat är långsammare än ögat', 'Det handlar om hur fort ljus och ljud färdas, inte om kroppen.']],
+      'Jämför 300 000 km/s med 340 m/s.', ['Ljuset går 300 000 km/s och är framme direkt.', 'Ljudet går 340 m/s och kommer efter.']),
+    mc(2, 'Längst bak på en festival ser du trummisen slå innan du hör slaget. Varför?', 'Ljudet behöver tid att färdas, ljuset är framme direkt',
+      [['Högtalarna är trasiga', 'Det händer alltid på långt avstånd. Ljudet går bara 340 m/s.'], ['Ljuset studsar på publiken', 'Det handlar om att ljud är mycket långsammare än ljus.']],
+      'Samma sak som blixt och åska.', ['Ljuset når dig direkt.', 'Ljudet går 340 m/s, så det kommer en stund senare.']),
+    mc(3, 'Stora festivaler har högtalartorn mitt i publiken. Varför fördröjer man ljudet i dem med flit?', 'Så att det kommer samtidigt som ljudet från scenen',
+      [['För att göra ljudet starkare', 'Tornen gör det starkare, men fördröjningen finns för att ljudet från scenen ska hinna fram först.'], ['För att skapa eko med flit', 'Det är tvärtom. Utan fördröjning hörs allt två gånger, som ett eko.']],
+      'Ljudet från scenen går bara 340 m/s.', ['Ljudet från scenen tar tid att nå tornen.', 'Tornen väntar lika länge, så att allt hörs samtidigt.']),
+    mc(2, 'Ett ekolod får tillbaka ekot efter längre tid än förut. Vad betyder det?', 'Det är djupare',
+      [['Det är grundare', 'Längre tid betyder att ljudet åkt längre, alltså djupare vatten.'], ['Vattnet är varmare', 'Tiden visar hur långt ljudet åkt ner och upp.']],
+      'Ljudet åker ner och upp igen.', ['Ljudet åker ner till botten och upp igen.', 'Längre tid = längre väg = djupare.']),
+    mc(3, 'Ett ekolod mäter tiden tills ekot kommer tillbaka. Varför måste man tänka på att ljudet åker två gånger?', 'Ljudet åker ner till botten och sedan upp igen',
+      [['Ljudet studsar två gånger mot båten', 'Det studsar mot botten en gång, men åker både ner och upp.'], ['Det behöver man inte', 'Tiden gäller både vägen ner och vägen upp. Djupet är bara halva sträckan.']],
+      'Vägen ner + vägen upp.', ['Tiden gäller vägen ner och upp.', 'Djupet är halva den sträckan.']),
     tf(3, 'Om det tar 3 sekunder mellan blixt och åska slog blixten ner 3 km bort.', false, 'Ljudet går 340 m varje sekund. 3 s · 340 m/s = 1020 m, alltså ungefär 1 km.', 'Hur långt går ljudet på en sekund?'),
   ];
 
-  const rakna = { key: 'ljud-rakna', levels: [2, 3], make(L) {
-    const kind = L === 2 ? pick(['blixt', 'vagg']) : pick(['ekolod', 'konsert', 'blixt']);
-    if (kind === 'blixt') {
-      const t = pick([2, 3, 4, 5, 6]), r = 340 * t;
-      return { prompt: '', ask: `Svante ser en blixt och räknar ${t} sekunder innan åskan mullrar. Hur långt bort slog blixten ner? Ljudet går 340 m/s.`, answer: Q.of(r), unit: 'm',
-        traps: [[t * 1000, `Ljudet går 340 m varje sekund, inte 1000 m. Räkna 340 · ${t}.`], [340, 'Du glömde att gånga med tiden.'], [r / 2, 'Här ska du inte dela med 2. Ljudet åker bara en väg, från blixten till dig.']],
-        hint: 'Ljuset syns direkt. Räkna hur långt ljudet hinner på den tiden: 340 · tiden.',
-        steps: ['Ljuset kommer nästan direkt, så det är ljudet som tar tid.', `Sträcka = fart · tid = 340 · ${t}`, `= <b>${r} m</b>`] };
-    }
-    if (kind === 'vagg') {
-      const t = pick([2, 4, 6]), r = (340 * t) / 2;
-      return { prompt: '', ask: `Bandet ropar mot en bergvägg och hör ekot efter ${t} sekunder. Hur långt bort är bergväggen? Ljudet går 340 m/s.`, answer: Q.of(r), unit: 'm',
-        traps: [[340 * t, 'Ljudet åker fram till väggen och tillbaka igen. Dela med 2.']],
-        hint: 'Ekot åker fram OCH tillbaka. Dela sträckan med 2.',
-        steps: [`Ljudet hinner 340 · ${t} = ${340 * t} m.`, 'Det är fram och tillbaka, så dela med 2.', `${340 * t} / 2 = <b>${r} m</b>`] };
-    }
-    if (kind === 'ekolod') {
-      const t = pick([2, 4, 6, 8]), r = (1500 * t) / 2;
-      return { prompt: '', ask: `En båts ekolod skickar ner ljud och får tillbaka ekot efter ${t} sekunder. Hur djupt är det? Ljudets hastighet: luft 340 m/s, vatten 1500 m/s.`, answer: Q.of(r), unit: 'm',
-        traps: [[1500 * t, 'Ljudet åker ner till botten och upp igen. Dela med 2.'], [(340 * t) / 2, 'Ekolodet sitter i vatten. Använd 1500 m/s, inte luftens 340 m/s.'], [340 * t, 'Använd vattnets hastighet, 1500 m/s, och dela med 2 eftersom ljudet åker ner och upp.']],
-        hint: 'Ljudet går i vatten och åker ner och upp.',
-        steps: ['Ekolodet är i vatten: 1500 m/s.', `1500 · ${t} = ${1500 * t} m, fram och tillbaka.`, `Dela med 2: <b>${r} m</b>`] };
-    }
-    const k = pick([1, 2, 3, 5]), d = 34 * k; // 34 m tar 0,1 s
-    return { prompt: '', ask: `Svante står ${d} m från scenen på en konsert. Hur lång tid tar det innan han hör trumslaget? Ljudet går 340 m/s.`, answer: Q.of(k, 10), unit: 's', fa: 'dec',
-      traps: [[Q.of(k), `Kolla decimalerna: ${d} / 340 är mindre än 1.`], [Q.of(d * 340), 'Tid = sträcka delat med fart. Du gångrade i stället.']],
-      hint: 'Tid = sträcka / fart.',
-      steps: ['Tid = sträcka / fart', `= ${d} / 340`, `= <b>${String(k / 10).replace('.', ',')} s</b>`] };
-  } };
 
   // ───────────── 3. Ljus & speglar ─────────────
   const spegelList = [
@@ -354,19 +339,6 @@
       steps: ['Mät vinkeln mellan den blå strålen och normalen.', 'Den gula strålen ska ha lika stor vinkel på andra sidan normalen.'], choices: shuffle(opts) };
   } };
 
-  const spegelVinkel = { key: 'spegel-vinkel', levels: [2, 3], make(L) {
-    if (L === 2) {
-      const a = pick([20, 25, 30, 35, 40, 50, 55, 60, 65]);
-      return { prompt: '', ask: `En ljusstråle träffar en spegel. Infallsvinkeln är ${a}°. Hur stor är reflektionsvinkeln?`, answer: Q.of(a), unit: '°',
-        traps: [[90 - a, 'Du räknade från spegelytan. Reflektionsvinkeln är helt enkelt lika stor som infallsvinkeln.'], [2 * a, 'Vinkeln dubblas inte. Infallsvinkeln = reflektionsvinkeln.']],
-        hint: 'Reflektionslagen.', steps: ['Reflektionslagen: infallsvinkeln = reflektionsvinkeln.', `Svar: <b>${a}°</b>`] };
-    }
-    const m = pick([20, 25, 30, 35, 55, 60, 70]);
-    return { prompt: '', ask: `En ljusstråle bildar ${m}° mot själva spegelytan. Hur stor är reflektionsvinkeln, mätt från normalen?`, answer: Q.of(90 - m), unit: '°',
-      traps: [[m, 'Vinklarna mäts från normalen, inte från spegelytan. Normalen står i 90° mot ytan.']],
-      hint: 'Normalen står i 90° mot ytan. Hur mycket är kvar upp till 90°?',
-      steps: ['Normalen står i 90° mot spegeln.', `Infallsvinkeln = 90° − ${m}° = ${90 - m}°.`, `Reflektionsvinkeln är lika stor: <b>${90 - m}°</b>`] };
-  } };
 
   // ───────────── 4. Brytning & linser ─────────────
   const brytList = [
@@ -562,9 +534,9 @@
     topics: [
       { id: 'vagor', name: 'Ljud & vågor', glyph: '∿', subs: [...fromList(vagorList, 'vagor'), waveTon, waveStyrka, waveKombo],
         boss: { name: 'Feedback-Fantomen', c1: '#ff9d5c', c2: '#e2434b', horns: 'spikes', eyes: 2 } },
-      { id: 'hora', name: 'Hörsel, eko & fart', glyph: 'Hz', subs: [...fromList(horaList, 'hora'), rakna],
+      { id: 'hora', name: 'Hörsel, eko & fart', glyph: 'Hz', subs: fromList(horaList, 'hora'),
         boss: { name: 'Eko-Ekorren', c1: '#5ff0b5', c2: '#139a7a', horns: 'antenna', eyes: 2 } },
-      { id: 'spegel', name: 'Ljus & speglar', glyph: '◐', subs: [...fromList(spegelList, 'spegel'), spegelRay, spegelVinkel],
+      { id: 'spegel', name: 'Ljus & speglar', glyph: '◐', subs: [...fromList(spegelList, 'spegel'), spegelRay],
         boss: { name: 'Spegel-Spöket', c1: '#b9c3ff', c2: '#6a74c9', horns: 'none', eyes: 3 } },
       { id: 'bryt', name: 'Brytning & linser', glyph: '⟋', subs: [...fromList(brytList, 'bryt'), brytRay],
         boss: { name: 'Lins-Lurken', c1: '#5ec8ff', c2: '#2f5bea', horns: 'curl', eyes: 1 } },

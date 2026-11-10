@@ -1,0 +1,772 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0d1d">
+<title>Ljudlabbet · Svante School</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Figtree:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="../../../engine/style.css">
+<style>
+  /* Ljudlabbet: en scroll med stationer. Varje station = testa något, se vad det heter, se var det används på scen. */
+  :root { --c1: #ffcb52; --c2: #ff8a3d; --laser: #ff4d5e; }
+  .screen { gap: 16px; padding-bottom: 60px; }
+  .top { display: flex; align-items: center; gap: 12px; }
+  .top a { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; background: var(--ink-2); border: 1px solid var(--line); color: var(--text); }
+  .top a svg { width: 22px; height: 22px; }
+  h1 { font: 700 clamp(30px, 9vw, 40px)/1 var(--f-display); margin: 0; }
+  h1 span { color: var(--c1); }
+  .lead { margin: 0; color: var(--muted); line-height: 1.45; }
+  .prog { display: grid; gap: 6px; padding: 12px 14px; }
+  .prog b { font: 700 14px/1 var(--f-display); letter-spacing: .06em; text-transform: uppercase; }
+  .warn { font-size: 14px; padding: 10px 12px; border-radius: var(--r-sm); background: color-mix(in oklab, var(--gold) 12%, transparent); color: #ffe2a0; }
+  .part { font: 700 24px/1 var(--f-display); margin: 18px 0 0; display: flex; align-items: center; gap: 10px; }
+  .part::after { content: ""; flex: 1; height: 1px; background: var(--line-2); }
+  .st { padding: 16px; display: grid; gap: 12px; }
+  .st h3 { margin: 0; font: 700 20px/1.15 var(--f-display); display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+  .st h3 small { font: 600 11px/1 var(--f-display); letter-spacing: .1em; color: var(--muted); white-space: nowrap; }
+  .st.done h3 small { color: var(--good); }
+  .st p { margin: 0; line-height: 1.45; }
+  .goal { font-size: 14.5px; padding: 9px 12px; border-radius: var(--r-sm); background: var(--ink-3); display: flex; gap: 8px; align-items: flex-start; }
+  .goal::before { content: "★"; color: var(--gold); }
+  .st.done .goal { background: color-mix(in oklab, var(--good) 14%, var(--ink-2)); }
+  .st.done .goal::before { content: "✓"; color: var(--good); }
+  canvas { width: 100%; display: block; border-radius: var(--r-sm); background: #070816; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .lbtn { flex: 1 1 auto; min-height: 44px; padding: 8px 12px; border-radius: 12px; border: 1px solid var(--line-2); background: var(--ink-3); font: 600 14px/1.15 var(--f-body); color: var(--text); }
+  .lbtn.on { border-color: var(--c1); background: color-mix(in oklab, var(--c1) 20%, var(--ink-3)); color: var(--c1); }
+  .lbtn.big { min-height: 54px; font: 700 16px/1 var(--f-display); letter-spacing: .04em; text-transform: uppercase; }
+  .slider { display: grid; gap: 4px; }
+  .slider label { display: flex; justify-content: space-between; font-size: 13.5px; color: var(--muted); }
+  .slider label b { color: var(--text); font-variant-numeric: tabular-nums; }
+  input[type=range] { width: 100%; accent-color: var(--c1); height: 32px; }
+  .readout { font: 700 26px/1.1 var(--f-display); font-variant-numeric: tabular-nums; text-align: center; }
+  .readout small { display: block; font: 600 13px/1.3 var(--f-body); color: var(--muted); margin-top: 4px; }
+  .zone { display: inline-block; padding: 3px 8px; border-radius: 8px; font-size: 12.5px; font-weight: 700; }
+  details.words { border-top: 1px solid var(--line); padding-top: 10px; }
+  details.words summary { cursor: pointer; font: 700 14px/1 var(--f-display); letter-spacing: .06em; text-transform: uppercase; color: var(--c1); list-style: none; }
+  details.words summary::before { content: "▸ "; }
+  details.words[open] summary::before { content: "▾ "; }
+  details.words ul { margin: 10px 0 0; padding-left: 1.1em; display: grid; gap: 6px; font-size: 15px; line-height: 1.4; }
+  .use { font-size: 14.5px; color: var(--muted); line-height: 1.45; }
+  .use b { color: var(--text); }
+  .frets { display: grid; grid-template-columns: repeat(13, 1fr); gap: 3px; }
+  .frets button { min-height: 40px; border-radius: 6px; border: 1px solid var(--line-2); background: var(--ink-3); font: 600 12px/1 var(--f-body); padding: 0; }
+  .frets button.on { background: var(--c1); color: var(--ink); border-color: var(--c1); }
+  .frets button.f12 { border-color: var(--gold); }
+  .strbar { height: 26px; position: relative; border-radius: 6px; background: var(--ink-3); overflow: hidden; }
+  .strbar i { position: absolute; left: 0; top: 0; bottom: 0; background: color-mix(in oklab, var(--c1) 40%, transparent); transition: width .25s; }
+  .strbar span { position: absolute; inset: 0; display: grid; place-items: center; font-size: 12.5px; font-weight: 600; }
+  .meterline { height: 14px; border-radius: 99px; background: var(--ink-3); overflow: hidden; }
+  .meterline > div { height: 100%; width: 0; background: linear-gradient(90deg, var(--good), var(--gold), var(--bad)); transition: width .15s; }
+  .fest { position: relative; height: 70px; border-radius: var(--r-sm); background: #070816; overflow: hidden; }
+  .fest .stagebox { position: absolute; left: 8px; top: 12px; bottom: 12px; width: 34px; border-radius: 6px; background: var(--ink-3); display: grid; place-items: center; font-size: 18px; transition: background .08s, box-shadow .08s; }
+  .fest .stagebox.flash { background: #fff6c7; box-shadow: 0 0 30px #ffe680; }
+  .fest .you { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 22px; }
+  .fest .dot { position: absolute; left: 46px; top: 50%; width: 12px; height: 12px; margin-top: -6px; border-radius: 50%; background: var(--c1); opacity: 0; }
+  .fest .lbl { position: absolute; left: 50px; right: 44px; bottom: 4px; font-size: 11.5px; color: var(--muted); text-align: center; }
+  .scene svg { width: 100%; height: auto; display: block; border-radius: var(--r-sm); background: #050610; stroke: none; }
+  .em { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+  .em button { min-height: 46px; border-radius: 8px; border: 1px solid var(--line-2); background: var(--ink-3); font: 600 11px/1.1 var(--f-body); padding: 2px; color: var(--text); }
+  .em button.seen { border-color: var(--c1); }
+  .em button.on { background: var(--c1); color: var(--ink); }
+  .eminfo { font-size: 15px; line-height: 1.45; min-height: 3em; }
+  .swatch { height: 56px; border-radius: var(--r-sm); display: grid; place-items: center; font: 700 18px/1 var(--f-display); transition: background .1s; }
+  .tip { font-size: 13px; color: var(--muted); }
+</style>
+</head>
+<body>
+<main class="screen">
+  <div class="top">
+    <a href="../../../" aria-label="Till startsidan"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></a>
+    <h1>Ljud<span>labbet</span></h1>
+  </div>
+  <p class="lead">Fysiken bakom musiken. Testa själv, lyssna och se vad det heter. Varje station har en utmaning.</p>
+  <div class="card prog"><b id="progTxt">0 av 11 utmaningar</b><div class="meter"><div id="progBar" style="width:0"></div></div></div>
+  <p class="warn">Börja med låg volym. Hörlurar är bäst, eftersom telefonhögtalare inte klarar de lägsta och högsta tonerna.</p>
+
+  <h2 class="part">Ljud</h2>
+
+  <!-- 1. Tonen och vågen -->
+  <section class="card st" data-ch="ton">
+    <h3>Tonen och vågen <small>UTMANING</small></h3>
+    <p>Starta tonen. Dra i reglagen och titta på vågen samtidigt som du lyssnar.</p>
+    <canvas id="tonCv" height="130"></canvas>
+    <div class="readout" id="tonRead">440 Hz<small>&nbsp;</small></div>
+    <div class="slider"><label for="tonF">Frekvens (tonhöjd) <b id="tonFv">440 Hz</b></label><input type="range" id="tonF" min="0" max="1000" value="447"></div>
+    <div class="slider"><label for="tonV">Volym (amplitud) <b id="tonVv">40 %</b></label><input type="range" id="tonV" min="0" max="100" value="40"></div>
+    <div class="row">
+      <button class="lbtn" data-f="41">Låga E på basen</button><button class="lbtn" data-f="60">Baskagge</button><button class="lbtn" data-f="440">A 440</button><button class="lbtn" data-f="8000">Cymbal-fräs</button>
+    </div>
+    <button class="lbtn big" id="tonPlay">▶ Starta tonen</button>
+    <p class="goal">Hitta den högsta tonen du hör. Dra långsamt uppåt och tryck när tonen försvinner.</p>
+    <button class="lbtn" id="tonLimit">Nu hör jag den inte längre</button>
+    <details class="words"><summary>Provorden</summary><ul>
+      <li><b>Frekvens</b> är antal svängningar per sekund. Den mäts i <b>hertz (Hz)</b>.</li>
+      <li>Hög frekvens ger hög (ljus) ton och täta vågor. Låg frekvens ger låg (mörk) ton och glesa vågor.</li>
+      <li><b>Amplitud</b> är vågens höjd. Större amplitud ger starkare ljud, som mäts i <b>decibel (dB)</b>.</li>
+      <li>Människan hör <b>20–20 000 Hz</b>. Under 20 Hz heter det <b>infraljud</b>, över 20 000 Hz <b>ultraljud</b>.</li>
+      <li>Toppen på vågen är en <b>förtätning</b> och dalen en <b>förtunning</b>. Avståndet från topp till topp är en <b>våglängd</b>.</li>
+    </ul></details>
+    <p class="use"><b>På scen:</b> ljudteknikerns equalizer har reglage för olika frekvenser. "Mer bas" betyder att man höjer de låga frekvenserna, runt 60 Hz där baskaggen ligger.</p>
+  </section>
+
+  <!-- 2. Gitarrsträngen -->
+  <section class="card st" data-ch="strang">
+    <h3>Gitarrsträngen <small>UTMANING</small></h3>
+    <p>Välj en sträng och tryck på ett band, där 0 är lös sträng.</p>
+    <div class="row" id="strings"></div>
+    <div class="frets" id="frets"></div>
+    <div class="strbar"><i id="strLen" style="width:100%"></i><span id="strTxt">Svängande del: 100 %</span></div>
+    <div class="readout" id="strRead">110 Hz<small>A-strängen, lös</small></div>
+    <p class="goal">Spela A-strängen lös och sedan på tolfte bandet. Vad händer med frekvensen?</p>
+    <details class="words"><summary>Provorden</summary><ul>
+      <li>Halva strängen (tolfte bandet) svänger <b>dubbelt så snabbt</b>, så frekvensen dubblas. Det blir samma ton en oktav upp.</li>
+      <li>En kortare sträng ger högre frekvens och kortare <b>våglängd</b>, alltså högre ton.</li>
+      <li>En <b>tjockare</b> sträng ger lägre ton. En <b>hårdare spänd</b> sträng ger högre ton. Därför stämmer man med skruvarna.</li>
+      <li>Kroppen på en akustisk gitarr är en <b>resonanslåda</b>. Den svänger med (<b>resonans</b> = medsvängning) och förstärker ljudet.</li>
+    </ul></details>
+    <p class="use"><b>På scen:</b> en elgitarr har ingen resonanslåda och låter nästan tyst utan förstärkare. Därför behövs mikrofon (pickup) och högtalare.</p>
+  </section>
+
+  <!-- 3. Trumskinnet -->
+  <section class="card st" data-ch="trumma">
+    <h3>Trumskinnet <small>UTMANING</small></h3>
+    <p>Spänn skinnet med reglaget. Slå löst och hårt.</p>
+    <div class="slider"><label for="drT">Skinnets spänning <b id="drTv">Mellan</b></label><input type="range" id="drT" min="0" max="100" value="45"></div>
+    <div class="row"><button class="lbtn big" id="drSoft">Slå löst</button><button class="lbtn big" id="drHard">Slå hårt</button></div>
+    <div class="slider"><label>Ljudstyrka <b id="drDb">–</b></label><div class="meterline"><div id="drMeter"></div></div></div>
+    <div class="readout" id="drRead">– Hz<small>Frekvensen ändras med spänningen, inte med hur hårt du slår</small></div>
+    <p class="goal">Slå både löst och hårt utan att ändra spänningen. Ändras frekvensen?</p>
+    <details class="words"><summary>Provorden</summary><ul>
+      <li>Ljud uppstår när något <b>vibrerar</b>. Skinnet trycker ihop luften till <b>förtätningar</b> och drar isär den till <b>förtunningar</b>. <b>Rörelseenergi</b> förs vidare genom luften.</li>
+      <li>Ett hårdare spänt skinn vibrerar snabbare och ger högre frekvens, alltså högre ton.</li>
+      <li>Ett hårdare slag ger större <b>amplitud</b> och starkare ljud (fler <b>dB</b>), men samma frekvens.</li>
+      <li>Runt <b>140 dB</b> gör det ont och hörseln kan skadas. Ett trumset kommer upp över 100 dB.</li>
+    </ul></details>
+    <p class="use"><b>På scen:</b> trummisar har öronproppar eller in-ear-lurar. Hörselskador från för starkt ljud går inte att laga.</p>
+  </section>
+
+  <!-- 4. Festivalen -->
+  <section class="card st" data-ch="fest">
+    <h3>Längst bak på festivalen <small>UTMANING</small></h3>
+    <p>Välj hur långt från scenen du står. Tryck på knappen och titta på scenljuset medan du lyssnar efter virveln.</p>
+    <div class="fest"><div class="stagebox" id="fsStage">🥁</div><div class="dot" id="fsDot"></div><div class="you">🧍</div><div class="lbl" id="fsLbl">&nbsp;</div></div>
+    <div class="slider"><label for="fsD">Avstånd från scenen <b id="fsDv">100 m</b></label><input type="range" id="fsD" min="10" max="700" step="10" value="100"></div>
+    <button class="lbtn big" id="fsGo">Slå på virveln</button>
+    <p class="goal">Ställ dig minst 500 m bort. Ser du ljuset före ljudet?</p>
+    <details class="words"><summary>Provorden</summary><ul>
+      <li>Ljuset går <b>300 000 km/s</b> och är framme direkt. Ljudet går bara <b>340 m/s</b> i luft.</li>
+      <li>Samma sak med blixt och åska: blixten ser du direkt och mullret kommer efter. Ungefär <b>3 sekunder per kilometer</b>.</li>
+      <li>Ljud behöver ett ämne att gå i. I vatten går det <b>1500 m/s</b>. Ju tätare ämnet är, desto snabbare. I rymden (<b>vakuum</b>) hörs ingenting.</li>
+    </ul></details>
+    <p class="use"><b>På scen:</b> stora festivaler har högtalartorn mitt ute i publiken. Ljudet i tornen fördröjs med flit, så att det kommer samtidigt som ljudet från scenen. Annars hör man allt två gånger.</p>
+  </section>
+
+  <!-- 5. Dopplereffekten -->
+  <section class="card st" data-ch="doppler">
+    <h3>Turnébussen tutar förbi <small>UTMANING</small></h3>
+    <p>Bussen kör förbi dig medan den tutar. Lyssna på tonen och titta på ringarna.</p>
+    <canvas id="dpCv" height="170"></canvas>
+    <button class="lbtn big" id="dpGo">Kör förbi</button>
+    <p class="goal">Kör bussen förbi och lyssna. När är tonen högst, och när sjunker den?</p>
+    <details class="words"><summary>Provorden</summary><ul>
+      <li><b>Dopplereffekten</b>: tonen ändras när ljudkällan rör sig.</li>
+      <li>Framför bussen trycks <b>förtätningarna</b> ihop. Kortare avstånd mellan dem ger högre frekvens och högre ton.</li>
+      <li>Bakom bussen blir avståndet större. Frekvensen minskar och tonen sjunker när den har passerat.</li>
+    </ul></details>
+    <p class="use"><b>I verkligheten:</b> en ambulans som kör förbi, eller en F1-bil som "nyyyoom" när den passerar.</p>
+  </section>
+
+  <!-- 6. Rummet -->
+  <section class="card st" data-ch="rum">
+    <h3>Klappen i olika rum <small>UTMANING</small></h3>
+    <p>Samma handklapp spelas i tre olika rum. Tryck på ett rum.</p>
+    <div class="row"><button class="lbtn" data-room="studio">Studion</button><button class="lbtn" data-room="trapp">Trapphuset</button><button class="lbtn" data-room="arena">Tom arena</button></div>
+    <p id="rumTxt" class="use">&nbsp;</p>
+    <p class="goal">Testa alla tre rummen.</p>
+    <details class="words"><summary>Provorden</summary><ul>
+      <li><b>Eko</b> uppstår när ljud studsar (<b>reflekteras</b>) mot en hård yta och kommer tillbaka som en tydlig upprepning.</li>
+      <li><b>Efterklang</b> är ett utdraget ljud som klingar av. Det hör man i stora hårda rum som trapphus och kyrkor.</li>
+      <li>Mjuka material <b>absorberar</b> ljud, och då blir ljudet till värme. De kallas <b>ljudabsorbenter</b>.</li>
+    </ul></details>
+    <p class="use"><b>I replokalen:</b> skumplattorna på väggarna är ljudabsorbenter. De gör att det inte ekar och att man hör vad man spelar.</p>
+  </section>
+
+  <!-- 7. Ekolodet -->
+  <section class="card st" data-ch="ekolod">
+    <h3>Ekolodet <small>UTMANING</small></h3>
+    <p>Båten skickar ljud ner i vattnet och lyssnar efter ekot. Välj ett djup och tryck "Pinga".</p>
+    <canvas id="ekCv" height="190"></canvas>
+    <div class="row"><button class="lbtn on" data-depth="1">Grunt</button><button class="lbtn" data-depth="2">Mellan</button><button class="lbtn" data-depth="3">Djupt</button></div>
+    <button class="lbtn big" id="ekGo">Pinga</button>
+    <p class="goal">Pinga på grunt och på djupt vatten. Var tar det längst tid?</p>
+    <details class="words"><summary>Provorden</summary><ul>
+      <li>Ett <b>ekolod</b> mäter djup och avstånd till sjöss med hjälp av eko.</li>
+      <li>Ljudet åker <b>ner och upp igen</b>. Ju längre tid det tar, desto djupare är det.</li>
+      <li>Riktiga ekolod använder <b>ultraljud</b>, över 20 000 Hz, som vi inte hör. Pipet här finns bara för att du ska höra något.</li>
+      <li>Fladdermöss använder ultraljud på samma sätt. På sjukhus "ser" man in i kroppen med ultraljud, till exempel på ett foster.</li>
+    </ul></details>
+  </section>
+
+  <h2 class="part">Ljus</h2>
+
+  <!-- 8. Laserstrålen -->
+  <section class="card st" data-ch="laser">
+    <h3>Laserstrålen <small>UTMANING</small></h3>
+    <p>Välj vad lasern lyser mot och vinkla den med reglaget.</p>
+    <div class="row"><button class="lbtn on" data-lm="spegel">Spegel</button><button class="lbtn" data-lm="in">Luft → vatten</button><button class="lbtn" data-lm="ut">Vatten → luft</button></div>
+    <canvas id="lsCv" height="240"></canvas>
+    <div class="slider"><label for="lsA">Infallsvinkel <b id="lsAv">40°</b></label><input type="range" id="lsA" min="0" max="85" value="40"></div>
+    <p id="lsTxt" class="use">&nbsp;</p>
+    <p class="goal">Få ljuset att fastna i vattnet så att inget kommer ut, det vill säga totalreflektion.</p>
+    <details class="words"><summary>Provorden</summary><ul>
+      <li><b>Normalen</b> är den streckade linjen, vinkelrät mot ytan. Alla vinklar mäts från den.</li>
+      <li><b>Reflektionslagen</b>: <b>infallsvinkeln</b> är lika stor som <b>reflektionsvinkeln</b>.</li>
+      <li>Från tunnare till tätare ämne (luft → vatten eller glas) <b>bryts</b> ljuset <b>mot normalen</b> och går långsammare.</li>
+      <li>Från tätare till tunnare (vatten → luft) bryts det <b>från normalen</b>. Rakt in längs normalen bryts det inte alls.</li>
+      <li><b>Totalreflektion</b>: när ljuset går från tätare till tunnare ämne och infallsvinkeln är tillräckligt stor reflekteras allt ljus.</li>
+    </ul></details>
+    <p class="use"><b>I studion:</b> den optiska kabeln (Toslink) mellan mixerbord och förstärkare skickar ljudet som ljuspulser. Ljuset studsar fram inne i kabeln genom <b>totalreflektion</b>, och det är samma sak i fiberkablarna för internet.</p>
+  </section>
+
+  <!-- 9. Speglar och linser -->
+  <section class="card st" data-ch="stralar">
+    <h3>Speglar och linser <small>UTMANING</small></h3>
+    <p>Tre parallella strålar träffar en spegel eller lins. Byt och jämför.</p>
+    <div class="row"><button class="lbtn on" data-sm="konkav">Konkav spegel</button><button class="lbtn" data-sm="konvex">Konvex spegel</button><button class="lbtn" data-sm="samling">Samlingslins</button><button class="lbtn" data-sm="sprid">Spridningslins</button></div>
+    <canvas id="smCv" height="210"></canvas>
+    <p id="smTxt" class="use">&nbsp;</p>
+    <p class="goal">Titta på alla fyra.</p>
+    <details class="words"><summary>Provorden</summary><ul>
+      <li><b>Konkav spegel</b> buktar inåt, som en grotta. Den samlar parallella strålar i <b>brännpunkten</b>. <b>Brännvidd</b> är avståndet från spegeln till brännpunkten.</li>
+      <li><b>Konvex spegel</b> buktar utåt och sprider strålarna. Brännpunkten ligger bakom spegeln. Man ser mindre ut men får större synfält.</li>
+      <li><b>Konvex lins</b> kallas också <b>samlingslins</b>. Den är tjockast på mitten och har en brännpunkt på var sida.</li>
+      <li><b>Konkav lins</b> kallas också <b>spridningslins</b>. Den är tunnast på mitten.</li>
+      <li>I kikare och mikroskop heter linsen närmast föremålet <b>objektiv</b> och linsen man tittar i <b>okular</b>. En <b>lupp</b> är ett förstoringsglas.</li>
+    </ul></details>
+  </section>
+
+  <!-- 10. Scenljuset -->
+  <section class="card st" data-ch="scen">
+    <h3>Scenljuset <small>UTMANING</small></h3>
+    <p>Tänd LED-lamporna i olika färger och byt färg på sångarens tröja.</p>
+    <div class="scene" id="scScene"></div>
+    <div class="row"><button class="lbtn on" data-led="r">Röd LED</button><button class="lbtn on" data-led="g">Grön LED</button><button class="lbtn on" data-led="b">Blå LED</button></div>
+    <div class="row" id="shirts"></div>
+    <p id="scTxt" class="use">&nbsp;</p>
+    <p class="goal">Få den röda tröjan att se svart ut.</p>
+    <details class="words"><summary>Provorden</summary><ul>
+      <li><b>Vitt ljus</b> består av alla färger. Röd, grön och blå LED tillsammans blir vitt.</li>
+      <li>Ett föremål <b>reflekterar</b> sin egen färg och <b>absorberar</b> resten. En röd tröja reflekterar bara rött.</li>
+      <li>Finns det ingen röd färg i ljuset finns det inget att reflektera, och tröjan ser svart ut.</li>
+      <li>Svart absorberar allt ljus och blir varmast i solen. Vitt reflekterar allt.</li>
+      <li>En bildskärm består av <b>pixlar</b>, små ljuspunkter i rött, grönt och blått, precis som LED-lamporna.</li>
+    </ul></details>
+    <p class="use"><b>På scen:</b> ljusteknikern väljer färger som passar kläderna. I fel ljus kan en snygg röd scenkostym bli helt svart.</p>
+  </section>
+
+  <!-- 11. Spektrumet -->
+  <section class="card st" data-ch="spektrum">
+    <h3>Spektrumet <small>UTMANING</small></h3>
+    <p>Dra genom våglängderna. Tryck sedan på alla sju sorters strålning nedanför.</p>
+    <div class="swatch" id="spSw">530 nm</div>
+    <div class="slider"><label for="spL">Våglängd <b id="spLv">530 nm · Grön</b></label><input type="range" id="spL" min="250" max="900" value="530"></div>
+    <p class="tip">← Kortare våglängd = mer energi &nbsp;·&nbsp; Längre våglängd = mindre energi →</p>
+    <div class="em" id="em"></div>
+    <p class="eminfo" id="emTxt">Tryck på en sorts strålning.</p>
+    <p class="goal">Tryck på alla sju sorterna av elektromagnetisk strålning.</p>
+    <details class="words"><summary>Provorden</summary><ul>
+      <li>Ett <b>prisma</b> delar upp vitt ljus i ett <b>spektrum</b>. En regnbåge fungerar på samma sätt.</li>
+      <li>Synligt ljus går från cirka <b>380 nm (violett)</b> till <b>750 nm (rött)</b>. Ordningen är violett, blå, grön, gul, orange, röd. Olika våglängder ser vi som olika färger.</li>
+      <li><b>IR</b> (infraröd) kallas <b>värmestrålning</b> och har längre våglängd än rött. <b>UV</b> har kortare våglängd än violett och ger solbränna.</li>
+      <li>Allt heter <b>elektromagnetisk strålning</b> och består av <b>fotoner</b>. Ljus beter sig både som partiklar och som vågrörelse.</li>
+      <li>Ju kortare våglängd, desto mer energi. Kortare våglängd än synligt ljus kan vara farligt: UV, röntgen och gamma.</li>
+    </ul></details>
+  </section>
+</main>
+
+<script>
+(function () {
+  'use strict';
+  const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const fmt = n => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  const dec = (n, d = 1) => n.toFixed(d).replace('.', ',');
+
+  // ───── Framsteg ─────
+  const CH = ['ton', 'strang', 'trumma', 'fest', 'doppler', 'rum', 'ekolod', 'laser', 'stralar', 'scen', 'spektrum'];
+  let done = {};
+  try { done = JSON.parse(localStorage.getItem('svante:lab:ljud')) || {}; } catch {}
+  function paint() {
+    const n = CH.filter(k => done[k]).length;
+    $('#progTxt').textContent = `${n} av ${CH.length} utmaningar`;
+    $('#progBar').style.width = `${(n / CH.length) * 100}%`;
+    for (const k of CH) $(`[data-ch=${k}]`).classList.toggle('done', !!done[k]);
+    $$('.st').forEach(s => { s.querySelector('h3 small').textContent = done[s.dataset.ch] ? 'KLAR' : 'UTMANING'; });
+    try {
+      localStorage.setItem('svante:lab:ljud', JSON.stringify(done));
+      localStorage.setItem('svante:mod:ljudlabbet', JSON.stringify({ summary: { readiness: Math.round((n / CH.length) * 100) } }));
+    } catch {}
+  }
+  const win = k => { if (!done[k]) { done[k] = 1; paint(); } };
+  paint();
+
+  // ───── Ljudmotor ─────
+  let AC, master;
+  function ac() {
+    if (!AC) {
+      AC = new (window.AudioContext || window.webkitAudioContext)();
+      master = AC.createGain(); master.gain.value = 0.7;
+      const comp = AC.createDynamicsCompressor();
+      master.connect(comp); comp.connect(AC.destination);
+    }
+    if (AC.state === 'suspended') AC.resume();
+    return AC;
+  }
+  function noiseBuf(sec) {
+    const a = ac(), b = a.createBuffer(1, Math.ceil(a.sampleRate * sec), a.sampleRate), d = b.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    return b;
+  }
+  function env(g, t, peak, decay) { g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t + decay); }
+  function drum(freq, vel, when = 0, out = master) {
+    const a = ac(), t = a.currentTime + when;
+    const o = a.createOscillator(), g = a.createGain();
+    o.frequency.setValueAtTime(freq * 1.6, t); o.frequency.exponentialRampToValueAtTime(freq, t + 0.05);
+    env(g, t, 0.9 * vel, 0.5); o.connect(g); g.connect(out); o.start(t); o.stop(t + 0.6);
+    const n = a.createBufferSource(), f = a.createBiquadFilter(), ng = a.createGain();
+    n.buffer = noiseBuf(0.2); f.type = 'bandpass'; f.frequency.value = 1800; env(ng, t, 0.35 * vel, 0.12);
+    n.connect(f); f.connect(ng); ng.connect(out); n.start(t);
+  }
+  function snare(when = 0) {
+    const a = ac(), t = a.currentTime + when;
+    const n = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
+    n.buffer = noiseBuf(0.3); f.type = 'highpass'; f.frequency.value = 900; env(g, t, 0.8, 0.22);
+    n.connect(f); f.connect(g); g.connect(master); n.start(t);
+    const o = a.createOscillator(), og = a.createGain(); o.frequency.value = 190; env(og, t, 0.5, 0.12);
+    o.connect(og); og.connect(master); o.start(t); o.stop(t + 0.2);
+  }
+  function clap(out) {
+    const a = ac(), t = a.currentTime;
+    for (const dt of [0, 0.011, 0.023]) {
+      const n = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
+      n.buffer = noiseBuf(0.1); f.type = 'bandpass'; f.frequency.value = 1300; f.Q.value = 0.8; env(g, t + dt, 0.9, dt === 0.023 ? 0.09 : 0.02);
+      n.connect(f); f.connect(g); g.connect(out); n.start(t + dt);
+    }
+  }
+  function pluck(freq) { // Karplus–Strong
+    const a = ac(), sr = a.sampleRate, len = Math.floor(sr * 2.2), b = a.createBuffer(1, len, sr), d = b.getChannelData(0);
+    const N = Math.round(sr / freq);
+    for (let i = 0; i < N; i++) d[i] = Math.random() * 2 - 1;
+    for (let i = N; i < len; i++) d[i] = 0.996 * 0.5 * (d[i - N] + d[i - N - 1 < 0 ? 0 : i - N - 1]);
+    const s = a.createBufferSource(), g = a.createGain(); g.gain.value = 0.55;
+    s.buffer = b; s.connect(g); g.connect(master); s.start();
+  }
+  function beep(freq, dur, when = 0, vol = 0.25) {
+    const a = ac(), t = a.currentTime + when, o = a.createOscillator(), g = a.createGain();
+    o.frequency.value = freq; env(g, t, vol, dur); o.connect(g); g.connect(master); o.start(t); o.stop(t + dur + 0.05);
+  }
+  function fitCanvas(cv) {
+    const r = devicePixelRatio || 1, w = cv.clientWidth, h = +(cv.dataset.h ||= cv.getAttribute('height'));
+    if (cv.width !== w * r || cv.height !== h * r) { cv.width = w * r; cv.height = h * r; }
+    cv.style.height = h + 'px';
+    const c = cv.getContext('2d'); c.setTransform(r, 0, 0, r, 0, 0);
+    return { c, w, h };
+  }
+
+  // ───── 1. Tonen och vågen ─────
+  const sliderToF = v => 20 * Math.pow(1000, v / 1000); // 20 Hz – 20 000 Hz, logaritmiskt
+  const fToSlider = f => (1000 * Math.log(f / 20)) / Math.log(1000);
+  let tonOsc, tonGain, tonOn = false, tonPhase = 0, tonDirty = true;
+  const tonF = () => sliderToF(+$('#tonF').value), tonV = () => +$('#tonV').value / 100;
+  function zone(f) {
+    if (f < 20) return ['Infraljud', 'var(--muted)'];
+    if (f > 20000) return ['Ultraljud', 'var(--muted)'];
+    return f < 250 ? ['Låg ton', 'var(--c1)'] : f < 2000 ? ['Mellanton', 'var(--c1)'] : ['Hög ton', 'var(--c1)'];
+  }
+  function tonUpdate() {
+    const f = tonF(), v = tonV();
+    $('#tonFv').textContent = `${fmt(f)} Hz`; $('#tonVv').textContent = `${Math.round(v * 100)} %`;
+    const [z, col] = zone(f);
+    $('#tonRead').innerHTML = `${fmt(f)} Hz<small><span class="zone" style="background:color-mix(in oklab, ${col} 20%, transparent);color:${col}">${z}</span> &nbsp;${fmt(f)} svängningar per sekund</small>`;
+    tonDirty = true;
+    if (tonOn) { tonOsc.frequency.setTargetAtTime(f, AC.currentTime, 0.02); tonGain.gain.setTargetAtTime(v * 0.35, AC.currentTime, 0.03); }
+  }
+  const tonCv = $('#tonCv');
+  function tonDraw() {
+    if (!tonOn && !tonDirty) return requestAnimationFrame(tonDraw);
+    tonDirty = false;
+    const { c, w, h } = fitCanvas(tonCv), f = tonF(), v = tonV();
+    const cycles = 1 + 22 * (Math.log(f / 20) / Math.log(1000)); // visuellt: fler vågor ju högre frekvens
+    if (tonOn) tonPhase += 0.08;
+    c.clearRect(0, 0, w, h);
+    c.strokeStyle = 'rgba(170,180,255,.15)'; c.lineWidth = 1; c.beginPath(); c.moveTo(0, h / 2); c.lineTo(w, h / 2); c.stroke();
+    c.strokeStyle = css('--c1'); c.lineWidth = 2.5; c.beginPath();
+    for (let x = 0; x <= w; x += 1) {
+      const y = h / 2 - Math.sin((x / w) * cycles * 2 * Math.PI - tonPhase) * v * (h / 2 - 8);
+      x ? c.lineTo(x, y) : c.moveTo(x, y);
+    }
+    c.stroke();
+    c.fillStyle = css('--muted'); c.font = '600 11px Figtree, sans-serif';
+    c.fillText('förtätning ↑', 8, 14); c.fillText('förtunning ↓', 8, h - 6);
+    requestAnimationFrame(tonDraw);
+  }
+  requestAnimationFrame(tonDraw);
+  $('#tonF').addEventListener('input', tonUpdate); $('#tonV').addEventListener('input', tonUpdate);
+  $$('[data-f]').forEach(b => b.addEventListener('click', () => { $('#tonF').value = fToSlider(+b.dataset.f); tonUpdate(); if (!tonOn) $('#tonPlay').click(); }));
+  $('#tonPlay').addEventListener('click', () => {
+    const a = ac();
+    if (!tonOn) {
+      tonOsc = a.createOscillator(); tonGain = a.createGain(); tonGain.gain.value = 0;
+      tonOsc.frequency.value = tonF(); tonOsc.connect(tonGain); tonGain.connect(master); tonOsc.start();
+      tonGain.gain.setTargetAtTime(tonV() * 0.35, a.currentTime, 0.03);
+      tonOn = true; $('#tonPlay').textContent = '■ Stoppa tonen';
+    } else {
+      tonGain.gain.setTargetAtTime(0, a.currentTime, 0.03); tonOsc.stop(a.currentTime + 0.2);
+      tonOn = false; tonDirty = true; $('#tonPlay').textContent = '▶ Starta tonen';
+    }
+  });
+  $('#tonLimit').addEventListener('click', () => {
+    const f = tonF();
+    if (f < 5000) { $('#tonLimit').textContent = 'Dra högre först, över 5 000 Hz'; return; }
+    $('#tonLimit').textContent = `Din gräns: ca ${fmt(f)} Hz. Människan hör upp till 20 000 Hz, men gränsen sjunker med åldern och med för mycket starkt ljud.`;
+    win('ton');
+  });
+  tonUpdate();
+
+  // ───── 2. Gitarrsträngen ─────
+  const STR = [['E', 82.41, 6], ['A', 110, 5], ['D', 146.83, 4], ['G', 196, 3], ['B', 246.94, 2], ['e', 329.63, 1.5]];
+  let curStr = 1, lastFret = { s: -1, f: -1 };
+  $('#strings').innerHTML = STR.map(([n, , th], i) => `<button class="lbtn${i === 1 ? ' on' : ''}" data-s="${i}" style="display:grid;gap:5px;justify-items:center">${n}<i style="display:block;width:70%;height:${th}px;background:currentColor;border-radius:2px"></i></button>`).join('');
+  $('#frets').innerHTML = Array.from({ length: 13 }, (_, i) => `<button data-fr="${i}" class="${i === 12 ? 'f12' : ''}">${i}</button>`).join('');
+  $$('[data-s]').forEach(b => b.addEventListener('click', () => { curStr = +b.dataset.s; $$('[data-s]').forEach(x => x.classList.toggle('on', x === b)); }));
+  $$('[data-fr]').forEach(b => b.addEventListener('click', () => {
+    const fr = +b.dataset.fr, [name, f0] = STR[curStr], f = f0 * Math.pow(2, fr / 12), len = 100 / Math.pow(2, fr / 12);
+    pluck(f);
+    $$('[data-fr]').forEach(x => x.classList.toggle('on', x === b));
+    $('#strLen').style.width = `${len}%`; $('#strTxt').textContent = `Svängande del: ${Math.round(len)} %`;
+    $('#strRead').innerHTML = `${fmt(f)} Hz<small>${name}-strängen, ${fr ? `band ${fr}` : 'lös'}${fr === 12 ? ' · halva längden, dubbla frekvensen!' : ''}</small>`;
+    if (curStr === 1 && fr === 12 && lastFret.s === 1 && lastFret.f === 0) win('strang');
+    if (curStr === 1 && fr === 0 && lastFret.s === 1 && lastFret.f === 12) win('strang');
+    lastFret = { s: curStr, f: fr };
+  }));
+
+  // ───── 3. Trumskinnet ─────
+  const drFreq = () => 70 + (+$('#drT').value / 100) * 220;
+  let drHit = { soft: false, hard: false, f: null };
+  function drUpdate() { const v = +$('#drT').value; $('#drTv').textContent = v < 30 ? 'Slakt' : v < 70 ? 'Mellan' : 'Spänt'; }
+  $('#drT').addEventListener('input', () => { drUpdate(); drHit = { soft: false, hard: false, f: null }; });
+  function hit(hard) {
+    const f = drFreq(); drum(f, hard ? 1 : 0.2);
+    $('#drMeter').style.width = hard ? '82%' : '35%';
+    $('#drDb').textContent = hard ? 'ca 105 dB' : 'ca 70 dB';
+    setTimeout(() => { $('#drMeter').style.width = '0'; }, 350);
+    $('#drRead').innerHTML = `${fmt(f)} Hz<small>${hard ? 'Hårt slag: stor amplitud' : 'Löst slag: liten amplitud'}, samma frekvens</small>`;
+    drHit[hard ? 'hard' : 'soft'] = true;
+    if (drHit.soft && drHit.hard) win('trumma');
+  }
+  $('#drSoft').addEventListener('click', () => hit(false)); $('#drHard').addEventListener('click', () => hit(true));
+  drUpdate();
+
+  // ───── 4. Festivalen ─────
+  const fsD = () => +$('#fsD').value;
+  $('#fsD').addEventListener('input', () => { $('#fsDv').textContent = `${fsD()} m`; });
+  $('#fsGo').addEventListener('click', () => {
+    const d = fsD(), delay = d / 340;
+    ac(); snare(delay);
+    const st = $('#fsStage'), dot = $('#fsDot'), box = $('.fest');
+    st.classList.add('flash'); setTimeout(() => st.classList.remove('flash'), 140);
+    $('#fsLbl').textContent = 'Ljuset är framme direkt…';
+    const t0 = performance.now(), span = box.clientWidth - 46 - 40;
+    dot.style.opacity = 1;
+    (function step(now) {
+      const p = Math.min(1, (now - t0) / 1000 / delay);
+      dot.style.transform = `translateX(${p * span}px)`;
+      if (p < 1) requestAnimationFrame(step);
+      else { dot.style.opacity = 0; $('#fsLbl').textContent = `…ljudet kom ${dec(delay)} s senare`; }
+    })(t0);
+    if (d >= 500) win('fest');
+  });
+
+  // ───── 5. Dopplereffekten ─────
+  const dpCv = $('#dpCv');
+  let dpRun = null;
+  function dpDraw(state) {
+    const { c, w, h } = fitCanvas(dpCv), sc = w / 260, road = 60, lis = { x: w / 2, y: road + 22 * sc + 40 };
+    c.clearRect(0, 0, w, h);
+    c.fillStyle = '#141734'; c.fillRect(0, road - 10, w, 20);
+    if (state) {
+      c.strokeStyle = css('--c1'); c.lineWidth = 1.5;
+      for (const ring of state.rings) {
+        const r = (state.t - ring.t) * 95 * sc; if (r > w) continue;
+        c.globalAlpha = Math.max(0, 1 - r / (w * 0.7)); c.beginPath(); c.arc(w / 2 + ring.x * sc, road, r, 0, Math.PI * 2); c.stroke();
+      }
+      c.globalAlpha = 1;
+      c.font = '30px sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+      c.save(); c.translate(w / 2 + state.x * sc, road); c.scale(-1, 1); c.fillText('🚌', 0, 0); c.restore();
+      c.fillStyle = css('--text'); c.font = '700 15px "Chakra Petch", sans-serif';
+      c.fillText(`${fmt(state.f)} Hz`, w / 2, 18);
+    } else {
+      c.font = '30px sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+      c.save(); c.translate(24, road); c.scale(-1, 1); c.fillText('🚌', 0, 0); c.restore();
+    }
+    c.font = '24px sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('🧍', lis.x, lis.y);
+    c.fillStyle = css('--muted'); c.font = '600 11px Figtree, sans-serif'; c.fillText('du', lis.x, lis.y + 20);
+  }
+  dpDraw(null);
+  $('#dpGo').addEventListener('click', () => {
+    if (dpRun) return;
+    const a = ac(), f0 = 330, v = 48, c0 = 340, dur = 5;
+    const o = a.createOscillator(), o2 = a.createOscillator(), lp = a.createBiquadFilter(), g = a.createGain();
+    o.type = 'sawtooth'; o2.type = 'sawtooth'; lp.type = 'lowpass'; lp.frequency.value = 1400; g.gain.value = 0;
+    o.connect(lp); o2.connect(lp); lp.connect(g); g.connect(master); o.start(); o2.start();
+    const t0 = performance.now(), rings = []; let lastRing = -1;
+    dpRun = true;
+    (function step(now) {
+      const t = (now - t0) / 1000, x = -120 + v * t, dist = Math.hypot(x, 22), cos = -x / dist;
+      const f = (f0 * c0) / (c0 - v * cos);
+      o.frequency.setTargetAtTime(f, a.currentTime, 0.02); o2.frequency.setTargetAtTime(f * 1.26, a.currentTime, 0.02);
+      g.gain.setTargetAtTime(0.22 / (1 + dist / 25), a.currentTime, 0.03);
+      if (t - lastRing > 0.16) { rings.push({ x, t }); lastRing = t; }
+      dpDraw({ x, f, t, rings });
+      if (t < dur) requestAnimationFrame(step);
+      else { g.gain.setTargetAtTime(0, a.currentTime, 0.05); o.stop(a.currentTime + 0.3); o2.stop(a.currentTime + 0.3); dpRun = null; win('doppler'); }
+    })(t0);
+  });
+
+  // ───── 6. Rummet ─────
+  const ROOMS = {
+    studio: { decay: 0.08, echoes: [], txt: '<b>Studion:</b> torrt och kort. Mjuka väggar <b>absorberar</b> ljudet, så nästan inget studsar tillbaka.' },
+    trapp: { decay: 2.4, echoes: [], txt: '<b>Trapphuset:</b> lång <b>efterklang</b>. Hårda väggar reflekterar ljudet hit och dit tills det klingar av.' },
+    arena: { decay: 0.9, echoes: [0.42, 0.84], txt: '<b>Tom arena:</b> tydligt <b>eko</b>. Ljudet studsar mot bortre väggen och kommer tillbaka som en upprepning.' },
+  };
+  const tried = new Set();
+  function ir(room) {
+    const a = ac(), sr = a.sampleRate, R = ROOMS[room], len = Math.floor(sr * (R.decay + 1.2)), b = a.createBuffer(2, len, sr);
+    for (let ch = 0; ch < 2; ch++) {
+      const d = b.getChannelData(ch);
+      d[0] = 1;
+      for (let i = 1; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.exp(-i / sr / (R.decay / 5)) * 0.5;
+      for (const e of R.echoes) { const s = Math.floor(e * sr); for (let i = 0; i < sr * 0.03; i++) d[s + i] += (Math.random() * 2 - 1) * 0.6 * (e > 0.5 ? 0.5 : 1) * Math.exp(-i / (sr * 0.01)); }
+    }
+    return b;
+  }
+  $$('[data-room]').forEach(b => b.addEventListener('click', () => {
+    const a = ac(), room = b.dataset.room, cv = a.createConvolver(), g = a.createGain();
+    cv.buffer = ir(room); g.gain.value = room === 'studio' ? 0.9 : 0.5; cv.connect(g); g.connect(master);
+    clap(cv);
+    $$('[data-room]').forEach(x => x.classList.toggle('on', x === b));
+    $('#rumTxt').innerHTML = ROOMS[room].txt;
+    tried.add(room); if (tried.size === 3) win('rum');
+  }));
+
+  // ───── 7. Ekolodet ─────
+  const ekCv = $('#ekCv');
+  let depth = 1, ekPinged = new Set(), ekBusy = false;
+  function ekDraw(p) {
+    const { c, w, h } = fitCanvas(ekCv), sea = 40, bottom = sea + 35 + depth * 35;
+    c.clearRect(0, 0, w, h);
+    c.fillStyle = '#0d2a4a'; c.fillRect(0, sea, w, h - sea);
+    c.fillStyle = '#3a2c1a'; c.beginPath(); c.moveTo(0, h); c.lineTo(0, bottom + 6); for (let x = 0; x <= w; x += 20) c.lineTo(x, bottom + Math.sin(x / 23) * 5); c.lineTo(w, h); c.fill();
+    c.font = '30px sans-serif'; c.textAlign = 'center'; c.textBaseline = 'bottom'; c.fillText('🚤', w / 2, sea + 6);
+    if (p != null) {
+      const down = p < 0.5, y = down ? sea + (bottom - sea) * (p * 2) : bottom - (bottom - sea) * ((p - 0.5) * 2);
+      c.strokeStyle = down ? css('--c1') : css('--good'); c.lineWidth = 3;
+      for (let k = 0; k < 3; k++) { c.globalAlpha = 1 - k * 0.3; c.beginPath(); c.arc(w / 2, y + (down ? -k * 6 : k * 6), 18 - k * 3, down ? 0.2 * Math.PI : 1.2 * Math.PI, down ? 0.8 * Math.PI : 1.8 * Math.PI); c.stroke(); }
+      c.globalAlpha = 1;
+      c.fillStyle = css('--text'); c.font = '600 13px Figtree, sans-serif'; c.textBaseline = 'top'; c.textAlign = 'left';
+      c.fillText(down ? 'Ljudet åker ner…' : '…ekot kommer upp', 10, sea + 10);
+    }
+  }
+  ekDraw(null);
+  $$('[data-depth]').forEach(b => b.addEventListener('click', () => { if (ekBusy) return; depth = +b.dataset.depth; $$('[data-depth]').forEach(x => x.classList.toggle('on', x === b)); ekDraw(null); }));
+  $('#ekGo').addEventListener('click', () => {
+    if (ekBusy) return; ekBusy = true;
+    const dur = 0.6 + depth * 0.6, t0 = performance.now();
+    beep(2200, 0.12); beep(2200, 0.12, dur, 0.12);
+    (function step(now) {
+      const p = (now - t0) / 1000 / dur;
+      if (p < 1) { ekDraw(p); requestAnimationFrame(step); }
+      else {
+        ekDraw(null); ekBusy = false; ekPinged.add(depth);
+        const { c } = { c: ekCv.getContext('2d') };
+        c.fillStyle = css('--text'); c.font = '600 13px Figtree, sans-serif'; c.textAlign = 'left'; c.textBaseline = 'top';
+        c.fillText(`Ekot tog ${dec(dur)} s. ${depth === 3 ? 'Längst tid = djupast.' : depth === 1 ? 'Kort tid = grunt.' : ''}`, 10, 50);
+        if (ekPinged.has(1) && ekPinged.has(3)) win('ekolod');
+      }
+    })(t0);
+  });
+
+  // ───── 8. Laserstrålen ─────
+  const lsCv = $('#lsCv');
+  let lm = 'spegel';
+  const deg = r => (r * 180) / Math.PI, rad = d => (d * Math.PI) / 180;
+  function beam(c, x1, y1, x2, y2, alpha = 1) {
+    c.save(); c.globalAlpha = alpha; c.strokeStyle = css('--laser'); c.shadowColor = css('--laser'); c.shadowBlur = 12; c.lineWidth = 3;
+    c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke(); c.restore();
+  }
+  function lsDraw() {
+    const { c, w, h } = fitCanvas(lsCv), X = w / 2, Y = h / 2, L = Math.min(w, h) * 0.62, a = +$('#lsA').value;
+    $('#lsAv').textContent = `${a}°`;
+    c.clearRect(0, 0, w, h);
+    const water = 'rgba(60,140,255,.22)';
+    if (lm === 'in') { c.fillStyle = water; c.fillRect(0, Y, w, h - Y); }
+    if (lm === 'ut') { c.fillStyle = water; c.fillRect(0, 0, w, Y); }
+    if (lm === 'spegel') {
+      c.strokeStyle = css('--text'); c.lineWidth = 4; c.beginPath(); c.moveTo(10, Y); c.lineTo(w - 10, Y); c.stroke();
+      c.strokeStyle = css('--muted'); c.lineWidth = 1.5;
+      for (let x = 16; x < w - 10; x += 12) { c.beginPath(); c.moveTo(x, Y + 3); c.lineTo(x - 8, Y + 12); c.stroke(); }
+    } else { c.strokeStyle = 'rgba(170,180,255,.35)'; c.lineWidth = 1.5; c.beginPath(); c.moveTo(0, Y); c.lineTo(w, Y); c.stroke(); }
+    c.setLineDash([5, 5]); c.strokeStyle = css('--muted'); c.lineWidth = 1.5; c.beginPath(); c.moveTo(X, 10); c.lineTo(X, h - 10); c.stroke(); c.setLineDash([]);
+    c.fillStyle = css('--muted'); c.font = '600 12px Figtree, sans-serif'; c.textAlign = 'left';
+    c.fillText(lm === 'ut' ? 'vatten' : 'luft', 10, 20); if (lm !== 'spegel') c.fillText(lm === 'in' ? 'vatten' : 'luft', 10, h - 10);
+    c.textAlign = 'left'; c.fillText('normal', X + 6, 14);
+    const sa = Math.sin(rad(a)), ca = Math.cos(rad(a));
+    beam(c, X - L * sa, Y - L * ca, X, Y);
+    c.font = '700 13px Figtree, sans-serif'; c.fillStyle = css('--text');
+    let txt;
+    if (lm === 'spegel') {
+      beam(c, X, Y, X + L * sa, Y - L * ca);
+      c.textAlign = 'right'; c.fillText(`${a}°`, X - 8, Y - 40); c.textAlign = 'left'; c.fillText(`${a}°`, X + 8, Y - 40);
+      txt = `Infallsvinkel ${a}° = reflektionsvinkel ${a}°. Det är <b>reflektionslagen</b>.`;
+    } else {
+      const n1 = lm === 'in' ? 1 : 1.33, n2 = lm === 'in' ? 1.33 : 1, s = (n1 / n2) * sa;
+      c.textAlign = 'right'; c.fillText(`${a}°`, X - 8, Y - 40);
+      if (s >= 1) {
+        beam(c, X, Y, X + L * sa, Y - L * ca);
+        c.fillStyle = css('--gold'); c.textAlign = 'center'; c.font = '700 16px "Chakra Petch", sans-serif'; c.fillText('TOTALREFLEKTION', X, h - 24);
+        txt = 'Inget ljus kommer ut, allt reflekteras tillbaka in i vattnet. Det är <b>totalreflektion</b>, och den kräver tätare → tunnare ämne och stor infallsvinkel.';
+        win('laser');
+      } else {
+        const b = Math.asin(s), sb = Math.sin(b), cb = Math.cos(b);
+        beam(c, X, Y, X + L * sa, Y - L * ca, 0.18);
+        beam(c, X, Y, X + L * sb, Y + L * cb);
+        c.textAlign = 'left'; c.fillStyle = css('--text'); c.font = '700 13px Figtree, sans-serif'; c.fillText(`${Math.round(deg(b))}°`, X + 8, Y + 44);
+        txt = a === 0 ? 'Rakt in längs normalen: ljuset bryts inte alls.'
+          : lm === 'in' ? `Luft → vatten: brytningsvinkeln (${Math.round(deg(b))}°) blir mindre. Ljuset bryts <b>mot normalen</b>.`
+          : `Vatten → luft: brytningsvinkeln (${Math.round(deg(b))}°) blir större. Ljuset bryts <b>från normalen</b>. Öka vinkeln…`;
+      }
+    }
+    $('#lsTxt').innerHTML = txt;
+  }
+  $('#lsA').addEventListener('input', lsDraw);
+  $$('[data-lm]').forEach(b => b.addEventListener('click', () => { lm = b.dataset.lm; $$('[data-lm]').forEach(x => x.classList.toggle('on', x === b)); lsDraw(); }));
+
+  // ───── 9. Speglar och linser ─────
+  const smCv = $('#smCv');
+  let sm = 'konkav'; const smSeen = new Set();
+  const SMTXT = {
+    konkav: '<b>Konkav spegel:</b> strålarna samlas i <b>brännpunkten</b>. Strålkastarna på scen har en konkav spegel bakom lampan. Lampan sitter i brännpunkten, så ljuset går ut som en rak stråle.',
+    konvex: '<b>Konvex spegel:</b> strålarna sprids. Man ser mindre ut men får större synfält. Den används som trafikspegel, till exempel vid lastkajen bakom arenan där turnébussarna backar in.',
+    samling: '<b>Samlingslins (konvex):</b> samlar strålarna i brännpunkten. Den finns i kameran som filmar konserten, i projektorn bakom scenen, i förstoringsglas och i ditt öga.',
+    sprid: '<b>Spridningslins (konkav):</b> sprider strålarna. Den används i glasögon för närsynta och i titthålet i en dörr.',
+  };
+  function smDraw() {
+    const { c, w, h } = fitCanvas(smCv), y0 = h / 2, hs = [-55, 0, 55], lensMode = sm === 'samling' || sm === 'sprid';
+    const x0 = lensMode ? w * 0.45 : w * 0.78, f = w * (lensMode ? 0.28 : 0.3);
+    c.clearRect(0, 0, w, h);
+    c.strokeStyle = 'rgba(170,180,255,.18)'; c.lineWidth = 1; c.beginPath(); c.moveTo(0, y0); c.lineTo(w, y0); c.stroke();
+    const ray = (pts, dash = false, alpha = 1) => { c.save(); c.globalAlpha = alpha; c.setLineDash(dash ? [4, 5] : []); c.strokeStyle = css('--laser'); c.shadowColor = css('--laser'); c.shadowBlur = dash ? 0 : 8; c.lineWidth = 2.5; c.beginPath(); pts.forEach(([x, y], i) => (i ? c.lineTo(x, y) : c.moveTo(x, y))); c.stroke(); c.restore(); };
+    c.strokeStyle = css('--text'); c.lineWidth = 4; c.fillStyle = 'rgba(120,170,255,.25)';
+    if (sm === 'konkav') { c.beginPath(); c.moveTo(x0 - 18, y0 - 85); c.quadraticCurveTo(x0 + 18, y0, x0 - 18, y0 + 85); c.stroke(); }
+    if (sm === 'konvex') { c.beginPath(); c.moveTo(x0 + 6, y0 - 85); c.quadraticCurveTo(x0 - 30, y0, x0 + 6, y0 + 85); c.stroke(); }
+    if (sm === 'samling') { c.lineWidth = 2; c.beginPath(); c.moveTo(x0, y0 - 85); c.quadraticCurveTo(x0 + 26, y0, x0, y0 + 85); c.quadraticCurveTo(x0 - 26, y0, x0, y0 - 85); c.fill(); c.stroke(); }
+    if (sm === 'sprid') { c.lineWidth = 2; c.beginPath(); c.moveTo(x0 - 16, y0 - 85); c.lineTo(x0 + 16, y0 - 85); c.quadraticCurveTo(x0 + 2, y0, x0 + 16, y0 + 85); c.lineTo(x0 - 16, y0 + 85); c.quadraticCurveTo(x0 - 2, y0, x0 - 16, y0 - 85); c.fill(); c.stroke(); }
+    let F;
+    for (const hh of hs) {
+      const y = y0 + hh, xs = sm === 'konkav' ? x0 - 18 + 36 * (1 - (hh / 85) ** 2) * 0.5 : sm === 'konvex' ? x0 + 6 - 36 * (1 - (hh / 85) ** 2) * 0.5 : x0;
+      ray([[6, y], [xs, y]]);
+      if (sm === 'konkav') { F = [x0 - f, y0]; const k = 1.7; ray([[xs, y], [xs + (F[0] - xs) * k, y + (F[1] - y) * k]]); }
+      if (sm === 'konvex') { F = [x0 + f * 0.6, y0]; const dx = xs - F[0], dy = y - F[1], n = Math.hypot(dx, dy); ray([[xs, y], [xs + (dx / n) * w * 0.5, y + (dy / n) * w * 0.5]]); if (hh) ray([[xs, y], F], true, 0.6); }
+      if (sm === 'samling') { F = [x0 + f, y0]; const k = (w - x0) / f; ray([[xs, y], [xs + (F[0] - xs) * k, y + (F[1] - y) * k]]); }
+      if (sm === 'sprid') { F = [x0 - f, y0]; const dx = xs - F[0], dy = y - F[1]; const k = (w - xs) / dx; ray([[xs, y], [xs + dx * k, y + dy * k]]); if (hh) ray([[xs, y], F], true, 0.6); }
+    }
+    c.fillStyle = css('--gold'); c.beginPath(); c.arc(F[0], F[1], 5, 0, Math.PI * 2); c.fill();
+    c.font = '700 12px Figtree, sans-serif'; c.textAlign = 'center'; c.fillText('brännpunkt', F[0], F[1] + 20);
+    $('#smTxt').innerHTML = SMTXT[sm];
+    smSeen.add(sm); if (smSeen.size === 4) win('stralar');
+  }
+  $$('[data-sm]').forEach(b => b.addEventListener('click', () => { sm = b.dataset.sm; $$('[data-sm]').forEach(x => x.classList.toggle('on', x === b)); smDraw(); }));
+
+  // ───── 10. Scenljuset ─────
+  const SHIRTS = { vit: [1, 1, 1], röd: [1, 0, 0], grön: [0, 1, 0], blå: [0, 0, 1], gul: [1, 1, 0], svart: [0, 0, 0] };
+  const CNAME = { r: 'röd', g: 'grön', b: 'blå' };
+  let led = { r: 1, g: 1, b: 1 }, shirt = 'röd';
+  $('#shirts').innerHTML = Object.keys(SHIRTS).map(k => `<button class="lbtn${k === shirt ? ' on' : ''}" data-shirt="${k}">${k[0].toUpperCase() + k.slice(1)} tröja</button>`).join('');
+  function seenName([r, g, b]) {
+    const k = `${r}${g}${b}`;
+    return { '000': 'svart', '100': 'röd', '010': 'grön', '001': 'blå', '110': 'gul', '101': 'magenta (rosa-lila)', '011': 'cyan (turkos)', '111': 'vit' }[k];
+  }
+  function scDraw() {
+    const L = [led.r, led.g, led.b], S = SHIRTS[shirt], seen = S.map((s, i) => s * L[i]);
+    const rgb = v => `rgb(${v.map(x => (x ? 235 : 0)).join(',')})`;
+    const lightCol = L.some(Boolean) ? rgb(L) : '#000';
+    const shirtCol = seen.some(Boolean) ? rgb(seen) : '#141414';
+    $('#scScene').innerHTML = `<svg viewBox="0 0 320 190">
+      <defs><radialGradient id="cone" cx="50%" cy="0%" r="100%"><stop offset="0" stop-color="${lightCol}" stop-opacity=".55"/><stop offset="1" stop-color="${lightCol}" stop-opacity="0"/></radialGradient></defs>
+      <rect x="0" y="160" width="320" height="30" fill="#1a1c33"/>
+      <polygon points="145,8 175,8 250,170 70,170" fill="url(#cone)"/>
+      <rect x="138" y="0" width="44" height="14" rx="3" fill="#2a2e55"/>
+      ${['r', 'g', 'b'].map((k, i) => `<circle cx="${148 + i * 12}" cy="7" r="4" fill="${led[k] ? ['#ff4040', '#40ff70', '#4080ff'][i] : '#333'}"/>`).join('')}
+      <circle cx="160" cy="70" r="16" fill="#c9a27e" opacity="${L.some(Boolean) ? 0.9 : 0.15}"/>
+      <path d="M128 96 L192 96 L202 150 L118 150 Z M128 96 L108 120 L118 128 L132 110 M192 96 L212 120 L202 128 L188 110" fill="${shirtCol}" stroke="${shirtCol}" stroke-width="2" stroke-linejoin="round"/>
+      <rect x="140" y="150" width="16" height="12" fill="#222"/><rect x="164" y="150" width="16" height="12" fill="#222"/>
+    </svg>`;
+    const inLight = ['r', 'g', 'b'].filter(k => led[k]).map(k => CNAME[k]);
+    const refl = ['r', 'g', 'b'].filter((k, i) => S[i]).map(k => CNAME[k]);
+    $('#scTxt').innerHTML = !inLight.length ? 'Alla lampor är släckta. Utan ljus finns inget att reflektera.'
+      : `Ljuset innehåller <b>${inLight.join(' + ')}</b>${inLight.length === 3 ? ' (= vitt)' : ''}. ${shirt[0].toUpperCase() + shirt.slice(1)} tröja reflekterar <b>${refl.join(' + ') || 'ingenting'}</b>. Du ser: <b>${seenName(seen)}</b>.`;
+    if (shirt === 'röd' && inLight.length && !seen.some(Boolean)) win('scen');
+  }
+  $$('[data-led]').forEach(b => b.addEventListener('click', () => { const k = b.dataset.led; led[k] = led[k] ? 0 : 1; b.classList.toggle('on', !!led[k]); scDraw(); }));
+  $$('[data-shirt]').forEach(b => b.addEventListener('click', () => { shirt = b.dataset.shirt; $$('[data-shirt]').forEach(x => x.classList.toggle('on', x === b)); scDraw(); }));
+
+  // ───── 11. Spektrumet ─────
+  function nmColor(l) {
+    let r = 0, g = 0, b = 0;
+    if (l >= 380 && l < 440) { r = -(l - 440) / 60; b = 1; } else if (l < 490) { g = (l - 440) / 50; b = 1; } else if (l < 510) { g = 1; b = -(l - 510) / 20; }
+    else if (l < 580) { r = (l - 510) / 70; g = 1; } else if (l < 645) { r = 1; g = -(l - 645) / 65; } else if (l <= 750) { r = 1; }
+    const fade = l < 420 ? 0.3 + (0.7 * (l - 380)) / 40 : l > 700 ? 0.3 + (0.7 * (750 - l)) / 50 : 1;
+    return `rgb(${[r, g, b].map(v => Math.round(255 * Math.pow(v * fade, 0.8))).join(',')})`;
+  }
+  const BANDS = [[380, 'Violett'], [450, 'Blå'], [495, 'Grön'], [570, 'Gul'], [590, 'Orange'], [620, 'Röd'], [750, null]];
+  function spUpdate() {
+    const l = +$('#spL').value, sw = $('#spSw');
+    let name;
+    if (l < 380) name = 'UV, osynligt'; else if (l > 750) name = 'IR, osynligt'; else name = BANDS.filter(b => b[0] <= l).pop()[1];
+    $('#spLv').textContent = `${l} nm · ${name}`;
+    const vis = l >= 380 && l <= 750;
+    sw.style.background = vis ? nmColor(l) : 'var(--ink-3)';
+    sw.style.color = vis && l > 470 && l < 600 ? '#111' : 'var(--text)';
+    sw.textContent = vis ? `${l} nm` : l < 380 ? 'Ultraviolett (UV): kortare våglängd än violett' : 'Infraröd (IR): längre våglängd än rött';
+  }
+  const EM = [
+    ['Radio', 'Längst våglängd, minst energi. <b>Radio och trådlösa mikrofoner</b> på scen skickar ljudet med radiovågor.'],
+    ['Mikro', '<b>Mikrovågor</b>: wifi, Bluetooth-hörlurar och mikrovågsugnen.'],
+    ['IR', '<b>Infraröd (IR)</b> = <b>värmestrålning</b>. Fjärrkontroller och värmelampor. Längre våglängd än rött ljus.'],
+    ['Synligt', '<b>Synligt ljus</b>, 380–750 nm: det enda vi kan se. Scenljuset, regnbågen, skärmar.'],
+    ['UV', '<b>Ultraviolett (UV)</b>: kortare våglängd än violett. Ger solbränna. UV-lampor ("blacklight") på klubbar får vita kläder att lysa.'],
+    ['Röntgen', '<b>Röntgen</b>: används för att se skelettet. Mycket energi och farligt i stora doser.'],
+    ['Gamma', '<b>Gammastrålning</b>: kortast våglängd och mest energi. Farligast.'],
+  ];
+  const emSeen = new Set();
+  $('#em').innerHTML = EM.map(([n], i) => `<button data-em="${i}">${n}</button>`).join('');
+  $$('[data-em]').forEach(b => b.addEventListener('click', () => {
+    const i = +b.dataset.em; emSeen.add(i);
+    $$('[data-em]').forEach(x => { x.classList.toggle('on', x === b); x.classList.toggle('seen', emSeen.has(+x.dataset.em)); });
+    $('#emTxt').innerHTML = EM[i][1];
+    if (emSeen.size === EM.length) win('spektrum');
+  }));
+  $('#spL').addEventListener('input', spUpdate);
+
+  // Första ritning och omritning vid storleksändring
+  const redraw = () => { tonDirty = true; lsDraw(); smDraw(); dpRun || dpDraw(null); ekBusy || ekDraw(null); };
+  spUpdate(); scDraw(); lsDraw(); smDraw();
+  addEventListener('resize', redraw);
+})();
+</script>
+</body>
+</html>
